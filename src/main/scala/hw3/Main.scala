@@ -1,13 +1,122 @@
 package hw3
 
+import scala.collection.immutable.ListMap
+import scala.collection.mutable.ListBuffer
+
 object Main {
-  def standardDeviation(vector: List[Double]): Double = ???
+  def mean(vector: List[Double]): Double ={
+    var res = 0.0
+    for(i <- vector) {
+      res += i
+    }
+    res/=vector.size
+    res
+  }
+  def standardDeviation(vector: List[Double]): Double = {
+    if(vector.isEmpty)
+      throw new Exception("Argument is an empty list")
+    if(vector.size==1)
+      return 0.0
+    var numenator = 0.0
+    val _mean = mean(vector)
+    for (i <- vector){
+      numenator+= scala.math.pow(i - _mean, 2)
+    }
+    scala.math.sqrt(numenator/(vector.size))
+  }
 
-  def letterFrequencyRanking(corpus: String): String = ???
+  def letterFrequencyRanking(corpus: String): String ={
+    var weights = Map[Char, Int]()
+    for(i<-corpus){
+      if(i.isLetter) {
+        val exists = weights.exists(x => x._1 == i)
+        if (exists) {
+          val value = weights(i) + 1
+          weights += (i.toLower -> value)
+        }
+        else {
+          weights += (i.toLower -> 1);
+        }
+      }
+    }
+    if(weights.isEmpty) ""
+    weights = ListMap(weights.toSeq.sortBy(_._1):_*)
+    var res = new StringBuilder()
+    for((k,v)<-weights){
+      val elem = weights.maxBy(_._2)._1
+      res += elem
+      weights-= elem
+    }
+    res.toString()
+  }
 
-  def romanji(katakana: String): String = ???
+  def romanji(katakana: String): String = {
+    var res = new StringBuilder()
+    var isDoubledSingle = false
+    var isDoubledNX = false
 
-  def gray(bits: Int): List[String] = ???
+    for(i<-katakana){
+      //check if the current symbol is in the basic list
+      if(Katakana.symbols.exists(x=>x._1==i.toLower)){
+
+        for(j<-Katakana.symbols(i)){
+
+          if(isDoubledSingle){
+            res+=j
+          }
+          if(isDoubledNX){
+            res+='n'
+          }
+          res+=j
+          isDoubledSingle = false
+        }
+      }
+      else {
+        //checking the pattern of "prolonging"
+        i match {
+          case 'ャ' => {
+            if (res(res.size - 1) == 'i') {
+              res(res.size - 1) = 'y'
+              res += 'a'
+            }
+            isDoubledSingle = false
+          }
+          case 'ュ' => {
+            if (res(res.size - 1) == 'i') {
+              res(res.size - 1) = 'y'
+              res += 'u'
+            }
+            isDoubledSingle = false
+          }
+          case 'ョ' => {
+            if (res(res.size - 1) == 'i') {
+              res(res.size - 1) = 'y'
+              res += 'o'
+            }
+            isDoubledSingle = false
+          }
+          case 'ッ' => {
+            isDoubledSingle = true
+          }
+          case 'ン' => {
+            isDoubledNX = true
+          }
+          case 'ー' => {
+            res(res.size-1) = Katakana.longVowels(res(res.size - 1))
+          }
+            //error case
+          case whoa => throw new Exception("The argument contains symbol(s) not from katakana")
+        }
+      }
+    }
+
+    res.toString()
+
+  }
+
+
+
+  //def gray(bits: Int): List[String]
 }
 
 object Katakana {
